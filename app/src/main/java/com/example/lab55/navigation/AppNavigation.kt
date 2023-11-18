@@ -32,9 +32,9 @@ fun AppNavigation(){
             val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
             RecipesScreen(categoryName, navController)
         }
-        composable("itemDetailLookup/{recipeId}") { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-            RecipeDetail(recipeId, navController)
+        composable("itemDetailLookup/{itemName}") { backStackEntry ->
+            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+            RecipeDetail(itemName, navController)
         }
     }
 }

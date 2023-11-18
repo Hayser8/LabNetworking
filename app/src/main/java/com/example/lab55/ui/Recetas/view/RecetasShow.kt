@@ -18,7 +18,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,11 +37,11 @@ import com.example.lab55.Networking.Response.MealRecipe
 @Composable
 fun RecipesScreen(categoryName: String, navController: NavController) {
     val viewModel: RecipesViewModel = viewModel()
-    val rememberedRecipes: MutableState<List<MealRecipe>> = remember { mutableStateOf(emptyList<MealRecipe>()) }
+    val recipes by viewModel.recipes.collectAsState()
 
-    viewModel.getRecipes(categoryName) { response ->
-        val recipesFromTheApi = response?.meals
-        rememberedRecipes.value = recipesFromTheApi.orEmpty()
+
+    LaunchedEffect(categoryName) {
+        viewModel.getRecipes(categoryName)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -75,7 +78,7 @@ fun RecipesScreen(categoryName: String, navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                itemsIndexed(rememberedRecipes.value.chunked(2)) { _, pair ->
+                itemsIndexed(recipes.chunked(2)) { _, pair ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween

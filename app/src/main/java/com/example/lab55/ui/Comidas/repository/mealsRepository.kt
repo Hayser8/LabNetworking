@@ -1,58 +1,62 @@
 package com.example.lab55.ui.Meals.repository
 
+import android.util.Log
 import com.example.lab55.Networking.MealsWebService
+import com.example.lab55.Networking.Response.MealInstruction
 import com.example.lab55.Networking.Response.MealInstructionResponse
+import com.example.lab55.Networking.Response.MealRecipe
 import com.example.lab55.Networking.Response.MealRecipeResponse
+import com.example.lab55.Networking.Response.MealResponse
 import com.example.lab55.Networking.Response.MealsCategoriesResponse
+import com.google.firebase.firestore.FirebaseFirestore
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 
 class MealsRepository(private val webService: MealsWebService = MealsWebService()) {
-    fun getMeals(successCallback: (response: MealsCategoriesResponse?) -> Unit) {
-        return webService.getMeals().enqueue(object : Callback<MealsCategoriesResponse> {
-            override fun onResponse(
-                call: Call<MealsCategoriesResponse>,
-                response: Response<MealsCategoriesResponse>
-            ) {
-                if (response.isSuccessful)
-                    successCallback(response.body())
-            }
+    private val db = FirebaseFirestore.getInstance()
 
-            override fun onFailure(call: Call<MealsCategoriesResponse>, t: Throwable) {
-                // TODO treat failure
+    //función para obtener categorias
+    fun getMeals(successCallback: (List<MealResponse>) -> Unit) {
+        db.collection("categories").get()
+            .addOnSuccessListener { documents ->
+                val mealsList = documents.map { document ->
+                    document.toObject(MealResponse::class.java)
+                }
+                successCallback(mealsList)
             }
-        })
+            .addOnFailureListener { exception ->
+                // Manejo de errores
+            }
     }
-    fun getRecipes(category: String, successCallback: (response: MealRecipeResponse?) -> Unit) {
-        return webService.getRecipes(category).enqueue(object : Callback<MealRecipeResponse>  {
-            override fun onResponse(
-                call: Call<MealRecipeResponse>,
-                response: Response<MealRecipeResponse>
-            ) {
-                if (response.isSuccessful)
-                    successCallback(response.body())
+    //función para obtener recetas
+    fun getRecipes(category: String, successCallback: (List<MealRecipe>) -> Unit) {
+        db.collection("meals").whereEqualTo("category", category).get()
+            .addOnSuccessListener { documents ->
+                val recipesList = documents.toObjects(MealRecipe::class.java)
+                Log.d("getRecipes", "Number of recipes fetched: ${recipesList.size}")
+                for (recipe in recipesList) {
+                    Log.d("getRecipes", "Recipe: ${recipe.name}")
+                }
+                successCallback(recipesList)
             }
-
-            override fun onFailure(call: Call<MealRecipeResponse>, t: Throwable) {
-                // TODO treat failure
+            .addOnFailureListener { exception ->
+                Log.e("getRecipes", "Error fetching recipes", exception)
             }
-        })
     }
-    fun getInstructions(recipeId: String, successCallback: (response: MealInstructionResponse?) -> Unit) {
-        return webService.getMealInstructions(recipeId).enqueue(object : Callback<MealInstructionResponse> {
-            override fun onResponse(
-                call: Call<MealInstructionResponse>,
-                response: Response<MealInstructionResponse>
-            ) {
-                if (response.isSuccessful)
-                    successCallback(response.body())
+    //Función para obtener instruccioness
+    fun getInstructions(recipeName: String, successCallback: (MealInstruction?) -> Unit, failureCallback: (Exception) -> Unit) {
+        db.collection("instructions")
+            .whereEqualTo("name", recipeName)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val mealInstruction = querySnapshot.documents.firstOrNull()?.toObject(MealInstruction::class.java)
+                successCallback(mealInstruction)
             }
-
-            override fun onFailure(call: Call<MealInstructionResponse>, t: Throwable) {
-                // TODO treat failure
+            .addOnFailureListener { exception ->
+                failureCallback(exception)
             }
-        })
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,12 +34,7 @@ import com.example.lab55.Networking.Response.MealResponse
 @Composable
 fun MealsCategoriesScreen(navController: NavController) {
     val viewModel: MealsCategoriesViewModel = viewModel()
-    val rememberedMeals: MutableState<List<MealResponse>> = remember { mutableStateOf(emptyList<MealResponse>()) }
-
-    viewModel.getMeals { response ->
-        val mealsFromTheApi = response?.categories
-        rememberedMeals.value = mealsFromTheApi.orEmpty()
-    }
+    val meals = viewModel.meals.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -70,7 +66,7 @@ fun MealsCategoriesScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp)) // Espacio después del título
             }
 
-            itemsIndexed(rememberedMeals.value.chunked(2)) { _, pair ->
+            itemsIndexed(meals.value.chunked(2)) { _, pair ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween

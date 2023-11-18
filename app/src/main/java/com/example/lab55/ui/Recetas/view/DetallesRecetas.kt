@@ -16,7 +16,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,12 +35,12 @@ import coil.compose.rememberImagePainter
 import com.example.lab55.Networking.Response.MealInstruction
 
 @Composable
-fun RecipeDetail(recipeId: String, navController: NavController) {
+fun RecipeDetail(itemName: String, navController: NavController) {
     val viewModel: RecipesViewModel = viewModel()
-    val rememberedRecipeDetail: MutableState<MealInstruction?> = remember { mutableStateOf(null) }
+    val instructions by viewModel.instructions.collectAsState()
 
-    viewModel.getInstructions(recipeId) { response ->
-        rememberedRecipeDetail.value = response?.meals?.firstOrNull()
+    LaunchedEffect(itemName) {
+        viewModel.getInstructions(itemName)
     }
 
     Column(
@@ -52,7 +55,7 @@ fun RecipeDetail(recipeId: String, navController: NavController) {
         ) {
 
             Image(
-                painter = rememberImagePainter(data = rememberedRecipeDetail.value?.imageUrl),
+                painter = rememberImagePainter(data = instructions?.imageUrl),
                 contentDescription = "Imagen de la receta",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop // Recorta la imagen para que se ajuste al tamaño
@@ -68,7 +71,7 @@ fun RecipeDetail(recipeId: String, navController: NavController) {
 
         // Muestra el nombre de la receta
         Text(
-            text = rememberedRecipeDetail.value?.name.orEmpty(),
+            text = instructions?.name.orEmpty(),
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             modifier = Modifier.padding(start = 16.dp)
@@ -90,7 +93,7 @@ fun RecipeDetail(recipeId: String, navController: NavController) {
 
         // Muestra las instrucciones
         Text(
-            text = rememberedRecipeDetail.value?.instructions.orEmpty(),
+            text = instructions?.instructions.orEmpty(),
             fontSize = 16.sp,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp)
         )

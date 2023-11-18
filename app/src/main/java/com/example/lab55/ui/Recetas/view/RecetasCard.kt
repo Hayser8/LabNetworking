@@ -1,5 +1,6 @@
 package com.example.lab55.ui.Recetas.view
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,8 @@ fun RecipeCard(
             .height(80.dp)  // Ajusta la altura para que el texto tenga suficiente espacio
             .padding(8.dp)
             .clickable {
-                navController.navigate("itemDetailLookup/$itemId")
+                val encodedName = Uri.encode(itemName)
+                navController.navigate("itemDetailLookup/$itemName")
             }
     ) {
         Column(
